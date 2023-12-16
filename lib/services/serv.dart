@@ -1,58 +1,37 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter_examen2siloe/models/book.dart';
+class BookService {
+  final Dio _dio = Dio();
+  final String _baseUrl = 'https://stephen-king-api.onrender.com';
 
-class StephenKingService {
-  final Dio dio;
-
-  StephenKingService() : dio = Dio();
-
-  StephenKingService.withBaseUrl(String baseUrl) : dio = Dio(BaseOptions(baseUrl: baseUrl));
-
-  Future<dynamic> getBooks() async {
+  Future<List<Book>> getBooks() async {
     try {
-      final response = await dio.get('/books');
-      return response.data;
-    } catch (error) {
-      _handleError('Error fetching books', error);
-      rethrow;
-    }
-  }
+      final response = await _dio.get(
+        '$_baseUrl/api/books',
+        options: Options(
+          validateStatus: (status) {
+            return status! < 500;
+          },
+        ),
+      );
 
-  Future<dynamic> getBookByTitle(String title) async {
-    try {
-      final response = await dio.get('/books', queryParameters: {'title': title});
-      return response.data;
-    } catch (error) {
-      _handleError('Error fetching book by title', error);
-      return;
-    }
-  }
+      print('Response status code: ${response.statusCode}');
+      print('Response data: ${response.data}');
 
-  Future<dynamic> getBookByID(String id) async {
-    try {
-      final response = await dio.get('/books/$id');
-      return response.data;
-    } catch (error) {
-      _handleError('Error fetching book by ID', error);
-      rethrow;
-    }
-  }
+      if (response.statusCode == 200) {
+        final List<dynamic> bookDataList = response.data['data'];
 
-  Future<dynamic> getAuthor() async {
-    try {
-      final response = await dio.get('/author');
-      return response.data;
-    } catch (error) {
-      _handleError('Error fetching author', error);
-      rethrow;
-    }
-  }
-
-  void _handleError(String message, dynamic error) {
-    print('$message: $error');
-    if (error is DioError) {
-      // Handle Dio-specific errors here
-      print('DioError details: ${error.response?.data}');
+        if (bookDataList.isNotEmpty) {
+          return bookDataList.map((book) => Book.fromJson(book)).toList();
+        } else {
+          throw Exception('No books found in the response data');
+        }
+      } else {
+        throw Exception('Failed to load books: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching books: $e');
+      throw Exception('Error fetching books: $e');
     }
   }
 }
