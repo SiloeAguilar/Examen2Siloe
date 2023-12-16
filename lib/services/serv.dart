@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-
 class StephenKingService {
   final Dio dio = Dio();
 
@@ -13,7 +12,6 @@ class StephenKingService {
       rethrow; // Re-throw the error to let the calling code handle it
     }
   }
-
   Future<dynamic> getBookByTitle(String title) async {
     try {
       final response = await dio.get('https://stephen-king-api.onrender.com/books?title=$title');
