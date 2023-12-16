@@ -11,7 +11,6 @@ class Book {
   final DateTime createdAt;
   final List<Map<String, dynamic>> villains;
   final String description;
-
   Book({
     required this.id,
     required this.year,
